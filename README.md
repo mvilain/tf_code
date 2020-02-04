@@ -17,3 +17,6 @@ and https://github.com/brikis98/terraform-up-and-running-code (in brikis98-code)
 }
 
 ```
+- use plan to display what's going on and filter out what's not relevent
+
+    terraform graph | egrep -v "meta|close|s3|vpc"
