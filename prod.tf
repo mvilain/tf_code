@@ -8,11 +8,11 @@ resource "aws_s3_bucket" "prod_tf_course" {
   acl    = "private"
 }
 
-resource "aws_default_vpc" "default" {
-  tags = {
-    Name = "Default VPC"
-  }
-}
+#resource "aws_default_vpc" "default" {
+#  tags = {
+#    Name = "Default VPC"
+#  }
+#}
 
 resource "aws_security_group" "prod_web" {
   name  = "prod_web"
@@ -49,5 +49,22 @@ resource "aws_security_group" "prod_web" {
 
   tags = {
     "Terraform" : "true"
+    "Name"      : "prod_web_sg"
   }
+}
+
+# Bitnami NGINX Open Source Certified us-east-2 ami-06249d482a680ae8d
+resource "aws_instance" "prod_web" {
+  ami           = "ami-06249d482a680ae8d"
+  instance_type = "t2.nano"
+
+  vpc_security_group_ids = [
+    aws_security_group.prod_web.id
+  ]
+
+  tags = {
+    "Terraform" : "true"
+    "Name"      : "prod_web"
+  }
+
 }
