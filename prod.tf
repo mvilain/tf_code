@@ -111,44 +111,42 @@ resource "aws_security_group" "prod_web" {
 }
 
 # ================================================== INSTANCES
-resource "aws_instance" "prod_web" {
-  count         = 3
-  ami           = var.nginx_ami
-  instance_type = "t2.nano"
-
-
-# ================================================== SG -> EC2
-  vpc_security_group_ids = [
-    aws_security_group.prod_web.id
-  ]
-
-  tags = {
-    "Terraform" : "true"
-    "Name"      : "prod_web"
-  }
-
-}
+# don't bother launching this as autoscale will do it automatically
+#resource "aws_instance" "prod_web" {
+#  count         = 2
+#  ami           = var.nginx_ami
+#  instance_type = "t2.nano"
+#
+#  vpc_security_group_ids = [
+#    aws_security_group.prod_web.id
+#  ]
+#
+#  tags = {
+#    "Terraform" : "true"
+#    "Name"      : "prod_web"
+#  }
+#}
 
 # ================================================== EIP -> EC2
-resource "aws_eip_association" "prod_web" {
-  instance_id      = aws_instance.prod_web.0.id
-  allocation_id    = aws_eip.prod_web.id
-}
+#resource "aws_eip_association" "prod_web" {
+#  instance_id      = aws_instance.prod_web.0.id
+#  allocation_id    = aws_eip.prod_web.id
+#}
 
-resource "aws_eip" "prod_web" {
-}
+#resource "aws_eip" "prod_web" {
+#}
 
 # ================================================== ELB
 resource "aws_elb" "prod_web"{
   name            = "prod-web-lb"
-  instances       = aws_instance.prod_web.*.id
-  subnets         = var.az_subnets.*
-#  depends_on      = [ 
-#    aws_default_subnet.default_az0,
-#    aws_default_subnet.default_az1,
-#    aws_default_subnet.default_az1
-#    ]
+#  instances       = aws_instance.prod_web.*.id
   security_groups = [aws_security_group.prod_web.id]
+
+  subnets         = [ 
+    aws_default_subnet.default_az0.id,
+    aws_default_subnet.default_az1.id,
+    aws_default_subnet.default_az2.id
+    ]
 
   listener {
     instance_port     = 80
@@ -166,18 +164,24 @@ resource "aws_elb" "prod_web"{
 # ================================================== AUTOSCALING
 resource "aws_autoscaling_group" "prod_web" {
   name                 = "prod_web_asg"
-  desired_capacity     = 1
+  desired_capacity     = 2
+  min_elb_capacity     = 2
   health_check_type    = "ELB"
   launch_configuration = aws_launch_configuration.prod_web.id
-  max_size             = 2
-  min_size             = 1
+  max_size             = 3
+  min_size             = 2
   availability_zones   = var.az_subnets.*
-#  availability_zones   = [
-#    aws_default_subnet.default_azA.id,
-#    aws_default_subnet.default_azB.id, 
-#    aws_default_subnet.default_azC.id
-#  ]
 
+  tag {
+    key                 = "Terraform"
+    value               = "true"
+    propagate_at_launch = true
+  }
+  tag {
+    key                 = "Name"
+    value               = "prod_web"
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_launch_configuration" "prod_web" {
@@ -191,6 +195,4 @@ resource "aws_launch_configuration" "prod_web" {
   root_block_device {
     delete_on_termination = true
   }
-
-  
 }
