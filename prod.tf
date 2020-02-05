@@ -171,6 +171,7 @@ resource "aws_autoscaling_group" "prod_web" {
   max_size             = 3
   min_size             = 2
   availability_zones   = var.az_subnets.*
+#  load_balancers       = [ aws_elb.prod_web.id ]
 
   tag {
     key                 = "Terraform"
@@ -182,6 +183,12 @@ resource "aws_autoscaling_group" "prod_web" {
     value               = "prod_web"
     propagate_at_launch = true
   }
+}
+
+# connect ELB and autoscale group
+resource "aws_autoscaling_attachment" "prod_asg_att" {
+  autoscaling_group_name = aws_autoscaling_group.prod_web.id
+  elb                    = aws_elb.prod_web.id
 }
 
 resource "aws_launch_configuration" "prod_web" {
