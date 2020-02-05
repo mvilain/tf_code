@@ -81,7 +81,6 @@ resource "aws_security_group" "prod_web" {
     protocol    = "tcp"
     cidr_blocks = [
       "0.0.0.0/0",
-#      "1.2.3.4/32"
     ]
   }
   ingress {
@@ -90,7 +89,6 @@ resource "aws_security_group" "prod_web" {
     protocol    = "tcp"
     cidr_blocks = [
       "0.0.0.0/0",
-#      "1.2.3.4/32"
     ]
   }
 
@@ -100,7 +98,6 @@ resource "aws_security_group" "prod_web" {
     protocol    = "-1"
     cidr_blocks = [
       "0.0.0.0/0",
-#      "1.2.3.4/32"
     ]
   }
 
@@ -126,20 +123,19 @@ resource "aws_security_group" "prod_web" {
 #    "Name"      : "prod_web"
 #  }
 #}
-
+#
 # ================================================== EIP -> EC2
 #resource "aws_eip_association" "prod_web" {
 #  instance_id      = aws_instance.prod_web.0.id
 #  allocation_id    = aws_eip.prod_web.id
 #}
-
+#
 #resource "aws_eip" "prod_web" {
 #}
 
 # ================================================== ELB
 resource "aws_elb" "prod_web"{
   name            = "prod-web-lb"
-#  instances       = aws_instance.prod_web.*.id
   security_groups = [aws_security_group.prod_web.id]
 
   subnets         = [ 
@@ -164,12 +160,12 @@ resource "aws_elb" "prod_web"{
 # ================================================== AUTOSCALING
 resource "aws_autoscaling_group" "prod_web" {
   name                 = "prod_web_asg"
-  desired_capacity     = 2
-  min_elb_capacity     = 2
+  desired_capacity     = 1
+#  min_elb_capacity     = 1
   health_check_type    = "ELB"
   launch_configuration = aws_launch_configuration.prod_web.id
-  max_size             = 3
-  min_size             = 2
+  max_size             = 1
+  min_size             = 1
   availability_zones   = var.az_subnets.*
 #  load_balancers       = [ aws_elb.prod_web.id ]
 
