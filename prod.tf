@@ -1,35 +1,61 @@
 # ================================================== VARIABLES
-variable "region" {
+variable "prod_web_region" {
   type    = string
-  default = "us-east-2"
 }
 
-variable "az_subnets" {
+variable "prod_web_subnets" {
   type    = list(string)
-  default = [
-    "us-east-2a",
-    "us-east-2b",
-    "us-east-2c",
-  ]
 }
+
+variable "prod_web_whitelist" {
+  type    = list(string)
+}
+
+variable "prod_web_desired_capacity" {
+  type    = number
+}
+
+variable "prod_web_max_size" {
+  type    = number
+}
+
+variable "prod_web_min_size" {
+  type    = number
+}
+
+#data "aws_ami" "ubuntu" {
+#  most_recent  = true
+#  filter {
+#    name = "name"
+#    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
+#  }
+#  filter {
+#    name = "virtualization-type"
+#    values = ["hvm"]
+#  }
+#  owners = ["099720109477"] # Canonical
+#}
 
 # Bitnami nginx Open Source Cert in us-east-2
-variable "nginx_ami" {
+variable "prod_web_ami" {
   type        = string
   description = "region (AMI) to use for nginx"
-  default     = "ami-06249d482a680ae8d"
-  
 #  validation {
-#    condition     = length(var.nginx_ami) > 4 && substr(var.nginx_ami, 0, 4) == "ami-"
+#    condition     = length(var.prod_web_ami) > 4 && substr(var.prod_web_ami, 0, 4) == "ami-"
 #    error_message = "Machine Image must be a valid AMI id, starting with \"ami-\"."
 #  }
+}
+
+variable "prod_web_type" {
+  type        = string
+  description = "region (AMI) to use for nginx"
 }
 
 ######################################################################
 
 provider "aws" {
   profile = "default"
-  region  = var.region
+  region  = var.prod_web_region
 }
 
 # ================================================== S3
@@ -46,7 +72,7 @@ resource "aws_default_vpc" "default" {
 }
 
 resource "aws_default_subnet" "default_az0" {
-  availability_zone = var.az_subnets.0
+  availability_zone = var.prod_web_subnets.0
   
     tags = {
     "Terraform" : "true"
@@ -54,7 +80,7 @@ resource "aws_default_subnet" "default_az0" {
   }
 }
 resource "aws_default_subnet" "default_az1" {
-  availability_zone = var.az_subnets.1
+  availability_zone = var.prod_web_subnets.1
   
     tags = {
     "Terraform" : "true"
@@ -62,7 +88,7 @@ resource "aws_default_subnet" "default_az1" {
   }
 }
 resource "aws_default_subnet" "default_az2" {
-  availability_zone = var.az_subnets.2
+  availability_zone = var.prod_web_subnets.2
   
     tags = {
     "Terraform" : "true"
@@ -79,26 +105,21 @@ resource "aws_security_group" "prod_web" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0",
-    ]
+    cidr_blocks = var.prod_web_whitelist
   }
+
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0",
-    ]
+    cidr_blocks = var.prod_web_whitelist
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [
-      "0.0.0.0/0",
-    ]
+    cidr_blocks = var.prod_web_whitelist
   }
 
   tags = {
@@ -111,8 +132,8 @@ resource "aws_security_group" "prod_web" {
 # don't bother launching this as autoscale will do it automatically
 #resource "aws_instance" "prod_web" {
 #  count         = 2
-#  ami           = var.nginx_ami
-#  instance_type = "t2.nano"
+#  ami           = var.prod_web_ami
+#  instance_type = var.prod_web_type
 #
 #  vpc_security_group_ids = [
 #    aws_security_group.prod_web.id
@@ -160,13 +181,12 @@ resource "aws_elb" "prod_web"{
 # ================================================== AUTOSCALING
 resource "aws_autoscaling_group" "prod_web" {
   name                 = "prod_web_asg"
-  desired_capacity     = 1
-#  min_elb_capacity     = 1
+  desired_capacity     = var.prod_web_desired_capacity
   health_check_type    = "ELB"
   launch_configuration = aws_launch_configuration.prod_web.id
-  max_size             = 1
-  min_size             = 1
-  availability_zones   = var.az_subnets.*
+  max_size             = var.prod_web_max_size
+  min_size             = var.prod_web_min_size
+  availability_zones   = var.prod_web_subnets.*
 #  load_balancers       = [ aws_elb.prod_web.id ]
 
   tag {
@@ -189,8 +209,8 @@ resource "aws_autoscaling_attachment" "prod_asg_att" {
 
 resource "aws_launch_configuration" "prod_web" {
   name              = "prod_web_lc"
-  image_id          = var.nginx_ami
-  instance_type     = "t2.nano"
+  image_id          = var.prod_web_ami
+  instance_type     = var.prod_web_type
 
   security_groups   = [
     aws_security_group.prod_web.id
