@@ -20,3 +20,17 @@ and https://github.com/brikis98/terraform-up-and-running-code (in brikis98-code)
 - use plan to display what's going on and filter out what's not relevent
 
     terraform graph | egrep -v "meta|close|s3|vpc"
+    
+
+## variables
+
+## modules
+
+- modules can exist locally or remotely (e.g. in S3)
+  check registry.terraform.io for list of registered user modules
+- have a directory structure
+
+  - main.tf -- main source of code or stub to call other parts
+  - variables.tf -- input variables with defaults required by the module
+  - outputs.tf  -- output variables of what values a module returns
+  - README.md  -- description of what the module does, inputs, and expected outputs

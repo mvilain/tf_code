@@ -1,4 +1,4 @@
-# ================================================== VARIABLES
+//================================================== VARIABLES
 variable "prod_web_region" {
   type    = string
 }
@@ -58,77 +58,29 @@ provider "aws" {
   region  = var.prod_web_region
 }
 
-# ================================================== S3
+//================================================== S3
 resource "aws_s3_bucket" "prod_tf_course" {
   bucket = "mvilain-prod-tf-course-20200203"
   acl    = "private"
 }
 
-# ================================================== NETWORK + SUBNETS
-resource "aws_default_vpc" "default" {
-  tags = {
-    Name = "Default VPC"
-  }
+// ================================================== NETWORK + SUBNETS
+module "net_setup" {
+  source = "./modules/net"
+
+  net_name  = "prod"
+  region    = var.prod_web_region
+  subnets   = [ "us-east-2a", "us-east-2b", "us-east-2c" ]
+  whitelist = [ "0.0.0.0/0" ]
+ 
+ #outputs:
+ # list(string, three elements) 
+ #      module.net_setup.net_subnets_ids = []
+ # string
+ #      module.net_setup.net_sg_id
 }
 
-resource "aws_default_subnet" "default_az0" {
-  availability_zone = var.prod_web_subnets.0
-  
-    tags = {
-    "Terraform" : "true"
-    "Name"      : "prod_web_az0"
-  }
-}
-resource "aws_default_subnet" "default_az1" {
-  availability_zone = var.prod_web_subnets.1
-  
-    tags = {
-    "Terraform" : "true"
-    "Name"      : "prod_web_az1"
-  }
-}
-resource "aws_default_subnet" "default_az2" {
-  availability_zone = var.prod_web_subnets.2
-  
-    tags = {
-    "Terraform" : "true"
-    "Name"      : "prod_web_az2"
-  }
-}
-
-# ================================================== SECURITY GROUPS
-resource "aws_security_group" "prod_web" {
-  name  = "prod_web"
-  description = "Allow standard http+https ports inbound, all outbound"
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = var.prod_web_whitelist
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = var.prod_web_whitelist
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = var.prod_web_whitelist
-  }
-
-  tags = {
-    "Terraform" : "true"
-    "Name"      : "prod_web_sg"
-  }
-}
-
-# ================================================== INSTANCES
+//================================================== INSTANCES
 # don't bother launching this as autoscale will do it automatically
 #resource "aws_instance" "prod_web" {
 #  count         = 2
@@ -145,7 +97,7 @@ resource "aws_security_group" "prod_web" {
 #  }
 #}
 #
-# ================================================== EIP -> EC2
+//================================================== EIP -> EC2
 #resource "aws_eip_association" "prod_web" {
 #  instance_id      = aws_instance.prod_web.0.id
 #  allocation_id    = aws_eip.prod_web.id
@@ -154,15 +106,18 @@ resource "aws_security_group" "prod_web" {
 #resource "aws_eip" "prod_web" {
 #}
 
-# ================================================== ELB
+//================================================== ELB
 resource "aws_elb" "prod_web"{
   name            = "prod-web-lb"
-  security_groups = [aws_security_group.prod_web.id]
+
+  security_groups = [ 
+    module.net_setup.net_sg_id 
+    ]
 
   subnets         = [ 
-    aws_default_subnet.default_az0.id,
-    aws_default_subnet.default_az1.id,
-    aws_default_subnet.default_az2.id
+    module.net_setup.net_subnets_ids.0,
+    module.net_setup.net_subnets_ids.1,
+    module.net_setup.net_subnets_ids.2
     ]
 
   listener {
@@ -178,7 +133,7 @@ resource "aws_elb" "prod_web"{
   }
 }
 
-# ================================================== AUTOSCALING
+//================================================== AUTOSCALING
 resource "aws_autoscaling_group" "prod_web" {
   name                 = "prod_web_asg"
   desired_capacity     = var.prod_web_desired_capacity
@@ -212,9 +167,10 @@ resource "aws_launch_configuration" "prod_web" {
   image_id          = var.prod_web_ami
   instance_type     = var.prod_web_type
 
-  security_groups   = [
-    aws_security_group.prod_web.id
-  ]
+  security_groups = [ 
+    module.net_setup.net_sg_id 
+    ]
+
   root_block_device {
     delete_on_termination = true
   }
