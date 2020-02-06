@@ -1,1 +1,1 @@
-# template variables.tf
+// template variables.tf

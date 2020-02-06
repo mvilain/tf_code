@@ -1,1 +1,1 @@
-# template main.tf
+// template main.tf

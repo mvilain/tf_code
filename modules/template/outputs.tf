@@ -1,1 +1,1 @@
-# template outputs.tf
+// template outputs.tf

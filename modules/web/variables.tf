@@ -1,31 +1,28 @@
-# web input variables.tf
+// web_server input variables.tf
 
-variable "prod_web_region" {
-  type    = string
-  description = "region (AMI) to use for nginx web service"
-  default = "us-east-2"
+variable "env_name" {
+  type        = string
+  description = "environment name of the type of network (prod/stage/test/dev)"
+  default     = "prod"
 }
 
-variable "prod_web_subnets" {
-  type    = list(string)
-  default = [ "us-east-2a", "us-east-2b", "us-east-2c" ]
+variable "az" {
+  type        = list(string)
+  description = "regional availabity zones"
 }
 
-#data "aws_ami" "ubuntu" {
-#  most_recent  = true
-#  filter {
-#    name = "name"
-#    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
-#  }
-#  filter {
-#    name = "virtualization-type"
-#    values = ["hvm"]
-#  }
-#  owners = ["099720109477"] # Canonical
-#}
+variable "subnets" {
+  type        = list(string)
+  description = "regional subnet ids"
+}
+
+variable "sg_ids" {
+  description = "security groups for web_server"
+  type        = string
+}
 
 # Bitnami nginx Open Source Cert in us-east-2
-variable "prod_web_ami" {
+variable "ami" {
   type        = string
   description = "region (AMI) to use for nginx"
   default     = "ami-06249d482a680ae8d"
@@ -36,22 +33,22 @@ variable "prod_web_ami" {
 #  }
 }
 
-variable "prod_web_type" {
+variable "type" {
   type        = string
   default     = "t2.nano"
 }
 
-variable "prod_web_desired_capacity" {
-  type    = number
-  default = 1
+variable "desired_capacity" {
+  type        = number
+  default     = 1
 }
 
-variable "prod_web_max_size" {
-  type    = number
-  default = 1
+variable "max_size" {
+  type        = number
+  default     = 1
 }
 
-variable "prod_web_min_size" {
-  type    = number
-  default = 1
+variable "min_size" {
+  type        = number
+  default     = 1
 }

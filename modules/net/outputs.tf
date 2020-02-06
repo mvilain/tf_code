@@ -1,4 +1,4 @@
-# net outputs.tf
+// net outputs.tf
 
 output "net_subnets_ids" {
   value = [ 

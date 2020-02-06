@@ -3,7 +3,7 @@ variable "prod_web_region" {
   type    = string
 }
 
-variable "prod_web_subnets" {
+variable "prod_web_az" {
   type    = list(string)
 }
 
@@ -68,16 +68,17 @@ resource "aws_s3_bucket" "prod_tf_course" {
 module "net_setup" {
   source = "./modules/net"
 
+  #inputs:
   env_name  = "prod"
   region    = var.prod_web_region
-  subnets   = [ "us-east-2a", "us-east-2b", "us-east-2c" ]
+  subnets   = var.prod_web_az
   whitelist = [ "0.0.0.0/0" ]
  
- #outputs:
- # list(string, three elements) 
- #      module.net_setup.net_subnets_ids = []
- # string
- #      module.net_setup.net_sg_id
+  #outputs:
+  # list(string, three elements) 
+  #      module.net_setup.net_subnets_ids = []
+  # string
+  #      module.net_setup.net_sg_id
 }
 
 //================================================== INSTANCES
@@ -106,72 +107,95 @@ module "net_setup" {
 #resource "aws_eip" "prod_web" {
 #}
 
-//================================================== ELB
-resource "aws_elb" "prod_web"{
-  name            = "prod-web-lb"
+// ================================================== PROD WEB
+module "web_server" {
+  source = "./modules/web"
 
-  security_groups = [ 
-    module.net_setup.net_sg_id 
-    ]
-
-  subnets         = [ 
+  #inputs:
+  env_name         = "prod"
+  az               = var.prod_web_az
+  subnets          = [ 
     module.net_setup.net_subnets_ids.0,
     module.net_setup.net_subnets_ids.1,
     module.net_setup.net_subnets_ids.2
-    ]
+  ]
+  sg_ids           = module.net_setup.net_sg_id
+  ami              = var.prod_web_ami
+  type             = var.prod_web_type
+  desired_capacity = var.prod_web_desired_capacity
+  max_size         = var.prod_web_max_size
+  min_size         = var.prod_web_min_size
 
-  listener {
-    instance_port     = 80
-    instance_protocol = "http"
-    lb_port           = 80
-    lb_protocol       = "http"
-  }
-  
-  tags = {
-    "Terraform" : "true"
-    "Name"      : "prod_web"
-  }
+  #outputs:
+  # none 
 }
 
-//================================================== AUTOSCALING
-resource "aws_autoscaling_group" "prod_web" {
-  name                 = "prod_web_asg"
-  desired_capacity     = var.prod_web_desired_capacity
-  health_check_type    = "ELB"
-  launch_configuration = aws_launch_configuration.prod_web.id
-  max_size             = var.prod_web_max_size
-  min_size             = var.prod_web_min_size
-  availability_zones   = var.prod_web_subnets.*
-#  load_balancers       = [ aws_elb.prod_web.id ]
-
-  tag {
-    key                 = "Terraform"
-    value               = "true"
-    propagate_at_launch = true
-  }
-  tag {
-    key                 = "Name"
-    value               = "prod_web"
-    propagate_at_launch = true
-  }
-}
-
-# connect ELB and autoscale group
-resource "aws_autoscaling_attachment" "prod_asg_att" {
-  autoscaling_group_name = aws_autoscaling_group.prod_web.id
-  elb                    = aws_elb.prod_web.id
-}
-
-resource "aws_launch_configuration" "prod_web" {
-  name              = "prod_web_lc"
-  image_id          = var.prod_web_ami
-  instance_type     = var.prod_web_type
-
-  security_groups = [ 
-    module.net_setup.net_sg_id 
-    ]
-
-  root_block_device {
-    delete_on_termination = true
-  }
-}
+//================================================== ELB
+#resource "aws_elb" "prod_web"{
+#  name            = "prod-web-lb"
+#
+#  security_groups = [ 
+#    module.net_setup.net_sg_id 
+#    ]
+#
+#  subnets         = [ 
+#    module.net_setup.net_subnets_ids.0,
+#    module.net_setup.net_subnets_ids.1,
+#    module.net_setup.net_subnets_ids.2
+#    ]
+#
+#  listener {
+#    instance_port     = 80
+#    instance_protocol = "http"
+#    lb_port           = 80
+#    lb_protocol       = "http"
+#  }
+#  
+#  tags = {
+#    "Terraform" : "true"
+#    "Name"      : "prod_web"
+#  }
+#}
+#
+#//================================================== AUTOSCALING
+#resource "aws_autoscaling_group" "prod_web" {
+#  name                 = "prod_web_asg"
+#  desired_capacity     = var.prod_web_desired_capacity
+#  health_check_type    = "ELB"
+#  launch_configuration = aws_launch_configuration.prod_web.id
+#  max_size             = var.prod_web_max_size
+#  min_size             = var.prod_web_min_size
+#  availability_zones   = var.prod_web_az.*
+##  load_balancers       = [ aws_elb.prod_web.id ]
+#
+#  tag {
+#    key                 = "Terraform"
+#    value               = "true"
+#    propagate_at_launch = true
+#  }
+#  tag {
+#    key                 = "Name"
+#    value               = "prod_web"
+#    propagate_at_launch = true
+#  }
+#}
+#
+## connect ELB and autoscale group
+#resource "aws_autoscaling_attachment" "prod_asg_att" {
+#  autoscaling_group_name = aws_autoscaling_group.prod_web.id
+#  elb                    = aws_elb.prod_web.id
+#}
+#
+#resource "aws_launch_configuration" "prod_web" {
+#  name              = "prod_web_lc"
+#  image_id          = var.prod_web_ami
+#  instance_type     = var.prod_web_type
+#
+#  security_groups = [ 
+#    module.net_setup.net_sg_id 
+#    ]
+#
+#  root_block_device {
+#    delete_on_termination = true
+#  }
+#}

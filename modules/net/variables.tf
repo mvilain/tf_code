@@ -1,4 +1,4 @@
-# net variables.tf
+// net variables.tf
 
 variable "env_name" {
   type        = string

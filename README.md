@@ -34,3 +34,20 @@ and https://github.com/brikis98/terraform-up-and-running-code (in brikis98-code)
   - variables.tf -- input variables with defaults required by the module
   - outputs.tf  -- output variables of what values a module returns
   - README.md  -- description of what the module does, inputs, and expected outputs
+  
+## DATA SOURCES
+
+```
+data "aws_ami" "ubuntu" {
+  most_recent  = true
+  filter {
+    name = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
+  }
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+  owners = ["099720109477"] # Canonical
+}
+```
