@@ -68,7 +68,7 @@ resource "aws_s3_bucket" "prod_tf_course" {
 module "net_setup" {
   source = "./modules/net"
 
-  net_name  = "prod"
+  env_name  = "prod"
   region    = var.prod_web_region
   subnets   = [ "us-east-2a", "us-east-2b", "us-east-2c" ]
   whitelist = [ "0.0.0.0/0" ]

@@ -1,8 +1,8 @@
 # net variables.tf
 
-variable "net_name" {
+variable "env_name" {
   type        = string
-  description = "name of the type of network (prod/stage/test/dev)"
+  description = "environment name of the type of network (prod/stage/test/dev)"
   default     = "prod"
 }
 

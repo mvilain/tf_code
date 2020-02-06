@@ -12,7 +12,7 @@ resource "aws_default_subnet" "default_az0" {
   
     tags = {
     "Terraform" : "true"
-    "Name"      : "${var.net_name}-az0"
+    "Name"      : "${var.env_name}-az0"
   }
 }
 resource "aws_default_subnet" "default_az1" {
@@ -20,7 +20,7 @@ resource "aws_default_subnet" "default_az1" {
   
     tags = {
     "Terraform" : "true"
-    "Name"      : "${var.net_name}-az1"
+    "Name"      : "${var.env_name}-az1"
   }
 }
 resource "aws_default_subnet" "default_az2" {
@@ -28,7 +28,7 @@ resource "aws_default_subnet" "default_az2" {
   
     tags = {
     "Terraform" : "true"
-    "Name"      : "${var.net_name}-az2"
+    "Name"      : "${var.env_name}-az2"
   }
 }
 
@@ -42,7 +42,7 @@ resource "aws_default_subnet" "default_az2" {
 
 # ================================================== SECURITY GROUPS
 resource "aws_security_group" "net_sg" {
-  name  = "${var.net_name}_sg"
+  name  = "${var.env_name}_sg"
   description = "Allow standard http+https ports inbound, all outbound"
 
   ingress {
@@ -68,7 +68,7 @@ resource "aws_security_group" "net_sg" {
 
   tags = {
     "Terraform" : "true"
-    "Name"      : "${var.net_name}-sg"
+    "Name"      : "${var.env_name}-sg"
   }
 }
 
