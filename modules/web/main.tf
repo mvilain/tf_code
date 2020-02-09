@@ -10,20 +10,11 @@
 #variable "max_size"
 #variable "min_size"
 
-//================================================== ELB
-# can't specify env_name here as tf won't allow variables in strings
+// ================================================== ELB
 resource "aws_elb" "web" {
-  name               = "web-lb"
-
-  security_groups    = [ 
-    var.sg_ids
-    ]
-
-  subnets            = [ 
-    var.subnets.0,
-    var.subnets.1,
-    var.subnets.2
-    ]
+  name               = "${var.env_name}-web-lb"
+  security_groups    = [ var.sg_ids ]
+  subnets            = [ var.subnets.0, var.subnets.1, var.subnets.2 ]
 
   listener {
     instance_port     = 80
@@ -34,14 +25,13 @@ resource "aws_elb" "web" {
   
   tags = {
     "Terraform" : "true"
-    "Name"      : "web-lb"
+    "Name"      : "${var.env_name}-web-lb"
   }
 }
 
-//================================================== AUTOSCALING
-# can't specify env_name here as tf won't allow variables in strings
+// ================================================== AUTOSCALING
 resource "aws_autoscaling_group" "web" {
-  name                 = "web-asg"
+  name                 = "${var.env_name}-web-asg"
   desired_capacity     = var.desired_capacity
   health_check_type    = "ELB"
   launch_configuration = aws_launch_configuration.web.id
@@ -57,29 +47,24 @@ resource "aws_autoscaling_group" "web" {
   }
   tag {
     key                 = "Name"
-    value               = "web"
+    value               = "${var.env_name}-web"
     propagate_at_launch = true
   }
 }
 
-//================================================== ELB -> ASG
+// ================================================== ELB -> ASG
 resource "aws_autoscaling_attachment" "asg_att" {
   autoscaling_group_name = aws_autoscaling_group.web.id
   elb                    = aws_elb.web.id
 }
 
-# can't specify env_name here as tf won't allow variables in strings
 resource "aws_launch_configuration" "web" {
-  name              = "web-lc"
+  name              = "${var.env_name}-web-lc"
   image_id          = var.ami
   instance_type     = var.type
+  security_groups = [ var.sg_ids ]
 
   root_block_device {
     delete_on_termination = true
   }
-
-  security_groups = [ 
-    var.sg_ids
-    ]
-
 }
