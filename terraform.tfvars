@@ -1,5 +1,5 @@
-prod_web_region            = "us-east-2"
-prod_web_az                = [ "us-east-2a", "us-east-2b", "us-east-2c" ]
+prod_region               = "us-east-2"
+#prod_web_az                = [ "us-east-2a", "us-east-2b", "us-east-2c" ]
 
 prod_web_whitelist         = [ "0.0.0.0/0" ]
 
