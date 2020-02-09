@@ -1,10 +1,6 @@
 //================================================== VARIABLES
-variable "prod_web_region" {
+variable "prod_region" {
   type    = string
-}
-
-variable "prod_web_az" {
-  type    = list(string)
 }
 
 variable "prod_web_whitelist" {
@@ -38,12 +34,27 @@ variable "prod_web_type" {
 
 provider "aws" {
   profile = "default"
-  region  = var.prod_web_region
+  region  = var.prod_region
 }
 
-//================================================== S3
-resource "aws_s3_bucket" "prod_tf_course" {
-  bucket = "mvilain-prod-tf-course-20200203"
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnet_ids" "default" {
+  vpc_id = data.aws_vpc.default.id
+}
+# data.aws_subnet_ids.default.ids lists region's default subnet ids
+
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+# data.aws_availability_zones.available.names is lists region's availability zones
+# data.aws_availability_zones.available.zone_ids is lists region's availability zone ids
+
+//================================================== S3 BACKEND
+resource "aws_s3_bucket" "backend" {
+  bucket = "mvilain-prod-tf-backend-202002"
   acl    = "private"
 }
 
@@ -53,8 +64,8 @@ module "net_setup" {
 
   #inputs:
   env_name  = "prod"
-  region    = var.prod_web_region
-  subnets   = var.prod_web_az
+  region    = var.prod_region
+  subnets   = data.aws_subnet_ids.default.ids
   whitelist = [ "0.0.0.0/0" ]
  
   #outputs:
@@ -96,12 +107,14 @@ module "web_server" {
 
   #inputs:
   env_name         = "prod"
-  az               = var.prod_web_az
-  subnets          = [ 
-    module.net_setup.net_subnets_ids.0,
-    module.net_setup.net_subnets_ids.1,
-    module.net_setup.net_subnets_ids.2
-  ]
+  az               = data.aws_availability_zones.available.names
+  subnets          = data.aws_subnet_ids.default.ids
+#  az               = var.prod_web_az
+#  subnets          = [ 
+#    module.net_setup.net_subnets_ids.0,
+#    module.net_setup.net_subnets_ids.1,
+#    module.net_setup.net_subnets_ids.2
+#  ]
   sg_ids           = module.net_setup.net_sg_id
   ami              = var.prod_web_ami
   type             = var.prod_web_type
