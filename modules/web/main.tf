@@ -28,6 +28,9 @@ resource "aws_elb" "web" {
     "Name"      : "${var.env_name}-web-lb"
   }
 }
+#output "aws_elb.web." {
+#  value = aws_security_group.net_sg.id
+#}
 
 // ================================================== AUTOSCALING
 resource "aws_autoscaling_group" "web" {

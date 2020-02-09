@@ -52,11 +52,38 @@ data "aws_availability_zones" "available" {
 # data.aws_availability_zones.available.names is lists region's availability zones
 # data.aws_availability_zones.available.zone_ids is lists region's availability zone ids
 
-//================================================== S3 BACKEND
-resource "aws_s3_bucket" "backend" {
+//================================================== S3 ENCRYPTED BACKEND+LOCKS
+resource "aws_s3_bucket" "tf-backend" {
   bucket = "mvilain-prod-tf-backend-202002"
   acl    = "private"
+  
+#  lifecycle {
+#    prevent_destroy = true
+#  }
+  
+  versioning {
+  enabled = true
+  }
+  
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
 }
+
+#resource "aws_dynamodb_table" "tf_locks" {
+#  name         = "mvilain-prod-tf-locks"
+#  billing_mode = "PAY_PER_REQUEST"
+#  hash_key     = "LockID"
+#
+#  attribute {
+#    name       = "LockID"
+#    type       = "S"
+#  }
+#}
 
 // ================================================== NETWORK + SUBNETS
 module "net_setup" {

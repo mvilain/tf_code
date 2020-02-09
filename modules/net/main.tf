@@ -6,36 +6,36 @@
 #variable "whitelist"
 
 // ================================================== NETWORK + SUBNETS
-resource "aws_default_vpc" "default" {
-  tags = {
-    Name = "Default VPC"
-  }
-}
+#resource "aws_default_vpc" "default" {
+#  tags = {
+#    Name = "Default VPC"
+#  }
+#}
 
-resource "aws_default_subnet" "default_az0" {
-  availability_zone = var.subnets.0
-  
-    tags = {
-    "Terraform" : "true"
-    "Name"      : "${var.env_name}-az0"
-  }
-}
-resource "aws_default_subnet" "default_az1" {
-  availability_zone = var.subnets.1
-  
-    tags = {
-    "Terraform" : "true"
-    "Name"      : "${var.env_name}-az1"
-  }
-}
-resource "aws_default_subnet" "default_az2" {
-  availability_zone = var.subnets.2
-  
-    tags = {
-    "Terraform" : "true"
-    "Name"      : "${var.env_name}-az2"
-  }
-}
+#resource "aws_default_subnet" "default_az0" {
+#  availability_zone = var.subnets.0
+#  
+#    tags = {
+#    "Terraform" : "true"
+#    "Name"      : "${var.env_name}-az0"
+#  }
+#}
+#resource "aws_default_subnet" "default_az1" {
+#  availability_zone = var.subnets.1
+#  
+#    tags = {
+#    "Terraform" : "true"
+#    "Name"      : "${var.env_name}-az1"
+#  }
+#}
+#resource "aws_default_subnet" "default_az2" {
+#  availability_zone = var.subnets.2
+#  
+#    tags = {
+#    "Terraform" : "true"
+#    "Name"      : "${var.env_name}-az2"
+#  }
+#}
 
 # output "net_subnets_ids" {
 #   value = [ 
