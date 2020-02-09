@@ -5,7 +5,7 @@
 #variable "subnets"
 #variable "whitelist"
 
-# ================================================== NETWORK + SUBNETS
+// ================================================== NETWORK + SUBNETS
 resource "aws_default_vpc" "default" {
   tags = {
     Name = "Default VPC"
@@ -45,10 +45,10 @@ resource "aws_default_subnet" "default_az2" {
 #   ]
 # }
 
-# ================================================== SECURITY GROUPS
+// ================================================== SECURITY GROUPS
 resource "aws_security_group" "net_sg" {
   name  = "${var.env_name}_sg"
-  description = "Allow standard http+https ports inbound, all outbound"
+  description = "Allow http+https ports inbound, all outbound"
 
   ingress {
     from_port   = 80
