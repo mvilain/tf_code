@@ -9,9 +9,17 @@
 
 # Crash log files
 crash.log
+terraform
+.DS_Store
 
 # Module directory
 .terraform/
+
+# Crash log files
+crash.log
+
+account.json
+.vscode
 
 # Ignore any .tfvars files that are generated automatically for each Terraform run. Most
 # .tfvars files are managed as part of configuration and so should be included in
@@ -32,4 +40,3 @@ override.tf.json
 
 # Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
 # example: *tfplan*
-
