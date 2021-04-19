@@ -3,6 +3,9 @@ prod_region               = "us-east-2"
 
 prod_web_whitelist         = [ "0.0.0.0/0" ]
 
+prod_bucket                = "mvilain-prod-tf-backend-202002"
+prod_dynamodb_table        = "mvilain-prod-tf-locks"
+
 # Bitnami nginx Open Source Cert in us-east-2
 prod_web_ami               = "ami-06249d482a680ae8d"
 prod_web_type              = "t2.nano"
