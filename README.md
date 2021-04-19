@@ -51,3 +51,46 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 ```
+
+## REMOTE S3 STATE
+
+https://github.com/willfarrell/terraform-state-module
+
+```
+variable "name" {
+  default = "NAME"
+}
+variable "region" {
+  default = "us-east-1"
+}
+variable "profile" {
+  default = "farrelllabs"
+}
+
+provider "aws" {
+  region  = "${var.region}"
+  profile = "${var.profile}"
+}
+
+module "state" {
+  source = "git@github.com/willfarrell/terraform-state-module"
+  name = "${var.name}"
+}
+
+# Used in backend.s3 block
+output "backend_s3_region" {
+  value = "${var.region}"
+}
+output "backend_s3_profile" {
+  value = "${var.profile}"
+}
+output "backend_s3_dynamodb_table" {
+  value = "${module.state.dynamodb_table_id}"
+}
+output "backend_s3_bucket" {
+  value = "${module.state.s3_bucket_id}"
+}
+output "backend_s3_bucket_logs" {
+  value = "${module.state.s3_bucket_logs_id}"
+}
+```
