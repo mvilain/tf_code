@@ -7,6 +7,14 @@ variable "prod_web_whitelist" {
   type    = list(string)
 }
 
+variable "prod_bucket" {
+  type    = string
+}
+
+variable "prod_dynamodb_table" {
+  type    = string
+}
+
 variable "prod_web_desired_capacity" {
   type    = number
 }
@@ -54,9 +62,9 @@ data "aws_availability_zones" "available" {
 
 //================================================== S3 ENCRYPTED BACKEND+LOCKS
 resource "aws_s3_bucket" "tf-backend" {
-  bucket = "mvilain-prod-tf-backend-202002"
+  bucket = "mvilain-prod-tfstate-backend"
   acl    = "private"
-  
+
 #  lifecycle {
 #    prevent_destroy = true
 #  }
@@ -74,17 +82,42 @@ resource "aws_s3_bucket" "tf-backend" {
   }
 }
 
-#resource "aws_dynamodb_table" "tf_locks" {
-#  name         = "mvilain-prod-tf-locks"
-#  billing_mode = "PAY_PER_REQUEST"
-#  hash_key     = "LockID"
-#
-#  attribute {
-#    name       = "LockID"
-#    type       = "S"
+resource "aws_dynamodb_table" "tf_locks" {
+  name         = "mvilain-prod-tfstate-locks"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+
+  attribute {
+    name       = "LockID"
+    type       = "S"
+  }
+}
+
+#terraform {
+#  backend "local" {
+#    path = "./terraform.tfstate"
 #  }
 #}
-
+#terraform {
+#    backend "s3" {
+#    bucket         = "mvilain-prod-tfstate-backend"
+#    key            = "global/s3/terraform.tfstate"
+#    region         = "us-east-2"
+#    dynamodb_table = "mvilain-prod-tfstate-locks"
+#    encrypt        = true
+#  }
+#}
+#terraform {
+#  backend "s3" {
+#    bucket         = "mvilain-prod-tfstate-backend"
+#    key            = "vpc/terraform.tfstate"
+#    region         = "us-east-2"
+#    profile        = "tesera"
+#    dynamodb_table = "mvilain-prod-tfstate-locks"
+#    encrypt        = true
+#    kms_key_id     = "arn:aws:kms:us-east-2:<account_id>:key/<key_id>"
+#  }
+#}
 // ================================================== NETWORK + SUBNETS
 module "net_setup" {
   source = "./modules/net"
