@@ -94,3 +94,26 @@ output "backend_s3_bucket_logs" {
   value = "${module.state.s3_bucket_logs_id}"
 }
 ```
+
+## Appendix A
+
+### adding submodules to git repository
+
+see https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
+- git submodule add https://github.com/terraform-in-action/manning-code.git
+- git submodule add https://github.com/brikis98/terraform-up-and-running-code
+
+### removing submodules from git
+
+Here's how to remove submodules:
+
+- Delete the relevant section from the .gitmodules file.
+- Stage the .gitmodules changes git add .gitmodules
+- Delete the relevant section from .git/config.
+- Run git rm --cached path_to_submodule (no trailing slash).
+- Run rm -rf .git/modules/path_to_submodule (no trailing slash).
+- Commit git commit -m "Removed submodule "
+- Delete the now untracked submodule files rm -rf path_to_submodule
+
+from [https://gist.github.com/myusuf3/7f645819ded92bda6677](How to delete a submodule)
