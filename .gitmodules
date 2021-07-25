@@ -1,0 +1,6 @@
+[submodule "manning-code"]
+	path = manning-code
+	url = https://github.com/terraform-in-action/manning-code
+[submodule "terraform-up-and-running-code"]
+	path = terraform-up-and-running-code
+	url = https://github.com/brikis98/terraform-up-and-running-code
