@@ -1,6 +1,9 @@
 # tf_code
-for https://www.linkedin.com/learning/learning-terraform
-and https://github.com/brikis98/terraform-up-and-running-code (in brikis98-code)
+for 
+
+- https://www.linkedin.com/learning/learning-terraform
+- https://github.com/terraform-in-action/manning-code
+- https://github.com/brikis98/terraform-up-and-running-code (in brikis98-code)
 
 ```
 - file naming convention: **component-environment-region-other**
